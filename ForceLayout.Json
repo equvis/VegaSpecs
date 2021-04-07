@@ -1,0 +1,586 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "width": 700,
+  "height": 575,
+  "padding": 0,
+  "autosize": "none",
+
+  "signals": [
+    { "name": "cx", "update": "width / 2" },
+    { "name": "cy", "update": "height / 2" },
+    { "name": "collideRadius", "value": 25,
+      "bind": {"input": "range", "min": 3, "max": 150, "step": 1} },
+    { "name": "nbodyStrength", "value": -10,
+      "bind": {"input": "range", "min":-50, "max": 10, "step": 1} },
+    { "name": "linkDistance", "value": 180,
+      "bind": {"input": "range", "min": 5, "max": 500, "step": 1} },
+    { "name": "velocityDecay", "value": 0.4,
+      "bind": {"input": "range", "min": 0, "max": 1, "step": 0.01} },
+    { "name": "static", "value": false,
+      "bind": {"input": "checkbox"} },
+    {
+      "description": "State variable for active node fix status.",
+      "name": "fix", "value": 0,
+      "on": [
+        {
+          "events": "symbol:mouseout[!event.buttons], window:mouseup",
+          "update": "0"
+        },
+        {
+          "events": "symbol:mouseover",
+          "update": "fix || 1"
+        },
+        {
+          "events": "[symbol:mousedown, window:mouseup] > window:mousemove!",
+          "update": "2", "force": true
+        }
+      ]
+    },
+    {
+      "description": "Graph node most recently interacted with.",
+      "name": "node", "value": null,
+      "on": [
+        {
+          "events": "symbol:mouseover",
+          "update": "fix === 1 ? item() : node"
+        }
+      ]
+    },
+    {
+      "description": "Flag to restart Force simulation upon data changes.",
+      "name": "restart", "value": false,
+      "on": [
+        {"events": {"signal": "fix"}, "update": "fix > 1"}
+      ]
+    }
+  ],
+
+  "data": [
+    {
+      "name": "node-data",
+      "values": [
+ {
+   "name": "IDX:ASX",
+   "index": 0,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT10",
+   "index": 1,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT15",
+   "index": 2,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT20",
+   "index": 3,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT30",
+   "index": 4,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT40",
+   "index": 5,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT45",
+   "index": 6,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT50",
+   "index": 7,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT55",
+   "index": 8,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT60",
+   "index": 9,
+   "group": 1
+ },
+ {
+   "name": "IDX:FT65",
+   "index": 10,
+   "group": 1
+ },
+ {
+   "name": "IDX:AXX3510-GBP",
+   "index": 11,
+   "group": 1
+ }
+]
+    },
+    {
+      "name": "link-data",
+      "values": [
+ {
+   "source": 0,
+   "target": 1,
+   "value": 58
+ },
+ {
+   "source": 0,
+   "target": 2,
+   "value": 2
+ },
+ {
+   "source": 0,
+   "target": 3,
+   "value": -16
+ },
+ {
+   "source": 0,
+   "target": 4,
+   "value": -85
+ },
+ {
+   "source": 0,
+   "target": 5,
+   "value": -63
+ },
+ {
+   "source": 0,
+   "target": 6,
+   "value": -47
+ },
+ {
+   "source": 0,
+   "target": 7,
+   "value": 27
+ },
+ {
+   "source": 0,
+   "target": 8,
+   "value": 72
+ },
+ {
+   "source": 0,
+   "target": 9,
+   "value": -36
+ },
+ {
+   "source": 0,
+   "target": 10,
+   "value": -77
+ },
+ {
+   "source": 0,
+   "target": 11,
+   "value": 20
+ },
+ {
+   "source": 1,
+   "target": 2,
+   "value": 57
+ },
+ {
+   "source": 1,
+   "target": 3,
+   "value": -86
+ },
+ {
+   "source": 1,
+   "target": 4,
+   "value": -54
+ },
+ {
+   "source": 1,
+   "target": 5,
+   "value": -2
+ },
+ {
+   "source": 1,
+   "target": 6,
+   "value": 57
+ },
+ {
+   "source": 1,
+   "target": 7,
+   "value": -98
+ },
+ {
+   "source": 1,
+   "target": 8,
+   "value": -98
+ },
+ {
+   "source": 1,
+   "target": 9,
+   "value": 10
+ },
+ {
+   "source": 1,
+   "target": 10,
+   "value": -5
+ },
+ {
+   "source": 1,
+   "target": 11,
+   "value": 84
+ },
+ {
+   "source": 2,
+   "target": 3,
+   "value": -49
+ },
+ {
+   "source": 2,
+   "target": 4,
+   "value": -80
+ },
+ {
+   "source": 2,
+   "target": 5,
+   "value": -78
+ },
+ {
+   "source": 2,
+   "target": 6,
+   "value": 51
+ },
+ {
+   "source": 2,
+   "target": 7,
+   "value": -75
+ },
+ {
+   "source": 2,
+   "target": 8,
+   "value": -9
+ },
+ {
+   "source": 2,
+   "target": 9,
+   "value": -45
+ },
+ {
+   "source": 2,
+   "target": 10,
+   "value": -77
+ },
+ {
+   "source": 2,
+   "target": 11,
+   "value": 41
+ },
+ {
+   "source": 3,
+   "target": 4,
+   "value": 60
+ },
+ {
+   "source": 3,
+   "target": 5,
+   "value": 4
+ },
+ {
+   "source": 3,
+   "target": 6,
+   "value": 39
+ },
+ {
+   "source": 3,
+   "target": 7,
+   "value": 52
+ },
+ {
+   "source": 3,
+   "target": 8,
+   "value": -77
+ },
+ {
+   "source": 3,
+   "target": 9,
+   "value": 7
+ },
+ {
+   "source": 3,
+   "target": 10,
+   "value": 87
+ },
+ {
+   "source": 3,
+   "target": 11,
+   "value": -67
+ },
+ {
+   "source": 4,
+   "target": 5,
+   "value": 5
+ },
+ {
+   "source": 4,
+   "target": 6,
+   "value": -77
+ },
+ {
+   "source": 4,
+   "target": 7,
+   "value": 67
+ },
+ {
+   "source": 4,
+   "target": 8,
+   "value": 67
+ },
+ {
+   "source": 4,
+   "target": 9,
+   "value": -41
+ },
+ {
+   "source": 4,
+   "target": 10,
+   "value": -7
+ },
+ {
+   "source": 4,
+   "target": 11,
+   "value": 33
+ },
+ {
+   "source": 5,
+   "target": 6,
+   "value": 77
+ },
+ {
+   "source": 5,
+   "target": 7,
+   "value": -88
+ },
+ {
+   "source": 5,
+   "target": 8,
+   "value": 14
+ },
+ {
+   "source": 5,
+   "target": 9,
+   "value": -92
+ },
+ {
+   "source": 5,
+   "target": 10,
+   "value": -95
+ },
+ {
+   "source": 5,
+   "target": 11,
+   "value": 20
+ },
+ {
+   "source": 6,
+   "target": 7,
+   "value": -82
+ },
+ {
+   "source": 6,
+   "target": 8,
+   "value": -50
+ },
+ {
+   "source": 6,
+   "target": 9,
+   "value": -56
+ },
+ {
+   "source": 6,
+   "target": 10,
+   "value": 79
+ },
+ {
+   "source": 6,
+   "target": 11,
+   "value": 25
+ },
+ {
+   "source": 7,
+   "target": 8,
+   "value": -36
+ },
+ {
+   "source": 8,
+   "target": 9,
+   "value": -29
+ },
+ {
+   "source": 9,
+   "target": 10,
+   "value": -26
+ },
+ {
+   "source": 10,
+   "target": 11,
+   "value": -83
+ },
+ {
+   "source": 8,
+   "target": 9,
+   "value": -69
+ },
+ {
+   "source": 8,
+   "target": 10,
+   "value": -79
+ },
+ {
+   "source": 8,
+   "target": 11,
+   "value": -38
+ },
+ {
+   "source": 9,
+   "target": 10,
+   "value": 76
+ },
+ {
+   "source": 9,
+   "target": 11,
+   "value": -42
+ },
+ {
+   "source": 10,
+   "target": 11,
+   "value": 65
+ }
+]
+    },
+
+
+    {
+    "name": "index",
+      "source": "link-data",
+        "transform": [
+          {
+          	"type": "project",
+            "fields": ["value"],
+            "as": ["corr"]
+          }
+          ]
+      
+      }
+      
+
+  ],
+
+  "scales": [
+    {
+      "name": "color",
+      "type": "ordinal",
+      "range": {"scheme": "category20"}
+    },
+        {
+      "name": "Linkcolor",
+      "type": "ordinal",
+      "range": {"scheme": "category20"}
+    },
+    {
+  "name": "Linkcolor1",
+  "type": "quantile",
+  "domain": {"data": "link-data", "field": "value"},
+  "range": {"scheme": "plasma", "count": 10}
+},
+{
+  "name": "colora",
+  "type": "quantile",
+  "domain": {"data": "link-data", "field": "value"},
+  "range": {"scheme": "plasma", "count": 7}
+}
+  ],
+
+  "marks": [
+    {
+      "name": "nodes",
+      "type": "symbol",
+      "zindex": 1,
+
+      "from": {"data": "node-data"},
+      "on": [
+        {
+          "trigger": "fix",
+          "modify": "node",
+          "values": "fix === 1 ? {fx:node.x, fy:node.y} : {fx:x(), fy:y()}"
+        },
+        {
+          "trigger": "!fix",
+          "modify": "node", "values": "{fx: null, fy: null}"
+        }
+      ],
+
+      "encode": {
+        "enter": {
+          "fill": {"scale": "color", "field": "index"},
+          "stroke": {"value": "white"}
+        },
+        "update": {
+          "size": {"signal": "2 * collideRadius * collideRadius"},
+          "cursor": {"value": "pointer"}
+        }
+      },
+
+      "transform": [
+        {
+          "type": "force",
+          "iterations": 50,
+          "velocityDecay": {"signal": "velocityDecay"},
+          "restart": {"signal": "restart"},
+          "static": {"signal": "static"},
+          "forces": [
+            {"force": "center", "x": {"signal": "cx"}, "y": {"signal": "cy"}},
+            {"force": "collide", "radius": {"signal": "collideRadius"},"strength":0.1},
+            {"force": "nbody", "strength": -500},
+            {"force": "link", "links": "link-data", "distance":180 }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "path",
+      "from": {"data": "link-data"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "stroke": {"scale": "Linkcolor", "field": "corr"},
+          "strokeWidth": {"value": 0.5},
+                    "strokeOpacity": {"value": 0.2}
+
+        }
+      },
+      "transform": [
+        {
+          "type": "linkpath", "shape": "line",
+          "sourceX": "datum.source.x", "sourceY": "datum.source.y",
+          "targetX": "datum.target.x", "targetY": "datum.target.y"
+        }
+      ]
+    },
+      {
+      "type": "text",
+      "from": {"data": "nodes"},
+      "encode": {
+        "enter": {
+          "text": {"field": "datum.name"},
+          "fontSize": {"value": 9},
+          "fill": {"value": "black"}
+        },
+        "update": {
+          "x": {"field": "x","offset": -15},
+          "y": {"field": "y","offset": 30}
+
+          
+        }
+      }
+    }
+  ]
+}
