@@ -1,0 +1,152 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "An example of Cartesian layouts for a node-link diagram of hierarchical data.",
+  "width": 800,
+  "height": 600,
+  "padding": 5,
+  "signals": [
+    {"name": "labels", "value": true, "bind": {"input": "checkbox"}},
+    {
+      "name": "Market",
+      "value": "AIM",
+      "bind": {"input": "radio", "options": ["AIM", "Main"]}
+    },
+    {"name": "separation", "value": false, "bind": {"input": "checkbox"}},
+    {
+      "description": "Node mouseover",
+      "name": "nodeHov",
+      "value": null,
+      "on": [
+        {"events": "symbol:mouseover", "update": "datum"},
+        {"events": "symbol:mouseout", "update": "null"}
+      ]
+    },
+    {
+      "name": "RootNode",
+      "value": 50000,
+      "update": "Market === 'AIM' ? 50000 : 10000"
+    },
+    {
+      "name": "nodeSel",
+      "description": "Node double click",
+      "value": 50000,
+      "on": [
+        {
+          "events": "symbol:click",
+          "update": "datum.parent===nodeSelFilt ? datum.id :nodeSelParent"
+        }
+      ]
+    },
+    {
+      "name": "nodeSelParent",
+      "value": 50000,
+      "update": "nodeSel%100 > 0 ? (nodeSel-nodeSel%100) : nodeSel%1000 > 0 ? (nodeSel-nodeSel%1000) : min(RootNode,nodeSel - nodeSel%10000)"
+    },
+    {
+      "name": "nodeSelFilt",
+      "value": 50000,
+      "update": "nodeSel%100 > 0 ? (nodeSel-nodeSel%100) : nodeSel"
+    }
+  ],
+  "data": [
+    {"name": "points", "values": [{"id": 0, "parent": 0}]},
+    {
+      "name": "secondary",
+      "url": "https://api.jsonbin.io/b/606dc411ceba857326705382/6"
+    },
+    {
+      "name": "primary",
+      "source": "secondary",
+      "transform": [
+        {"type": "filter", "expr": "datum['id'] == nodeSelFilt "},
+        {
+          "type": "lookup",
+          "from": "points",
+          "key": "id",
+          "fields": ["parent"],
+          "as": ["parent"],
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "primary1",
+      "source": "secondary",
+      "transform": [
+        {"type": "filter", "expr": "datum['parent'] == nodeSelFilt "}
+      ]
+    },
+    {"name": "filtered", "source": ["primary", "primary1"]},
+    {
+      "name": "tree",
+      "source": "filtered",
+      "transform": [
+        {"type": "stratify", "key": "id", "parentKey": "parent"},
+        {
+          "type": "tree",
+          "method": "tidy",
+          "size": [{"signal": "height"}, {"signal": "width - 300"}],
+          "separation": {"signal": "separation"},
+          "as": ["y", "x", "depth", "children"]
+        }
+      ]
+    },
+    {
+      "name": "links",
+      "source": "tree",
+      "transform": [
+        {"type": "treelinks"},
+        {"type": "linkpath", "orient": "horizontal", "shape": "diagonal"}
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "linear",
+      "range": {"scheme": "magma"},
+      "domain": {"data": "tree", "field": "depth"},
+      "zero": true
+    }
+  ],
+  "marks": [
+    {
+      "type": "path",
+      "from": {"data": "links"},
+      "encode": {
+        "update": {"path": {"field": "path"}, "stroke": {"value": "#ccc"}}
+      }
+    },
+    {
+      "type": "symbol",
+      "from": {"data": "tree"},
+      "encode": {
+        "enter": {"size": {"value": 400}, "stroke": {"value": "#fff"}},
+        "update": {
+          "x": {"field": "x"},
+          "y": {"field": "y"},
+          "fill": {"scale": "color", "field": "depth"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "tree"},
+      "encode": {
+        "enter": {
+          "text": {"field": "name"},
+          "fontSize": {"value": 12},
+          "baseline": {"value": "middle"}
+        },
+        "update": {
+          "x": {"field": "x", "offset": 15},
+          "y": {"field": "y", "offset": 15},
+          "dx": {"signal": "datum.children ? -7 : 7"},
+          "align": {"signal": "datum.children ? 'right' : 'left'"},
+          "opacity": {"signal": "labels ? 1 : 0"}
+        }
+      }
+    }
+  ],
+  "config": {}
+}
